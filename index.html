@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Am More — Uttlesford Foodbank</title>
+<!-- Switzer (Trussell brand typeface, free from Fontshare). Falls back to Arial. -->
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,600,700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── TRUSSELL BRAND COLOURS ──
+     Core: Trussell green, dark green, black, white
+     Urgent: orange (calls to action only, used sparingly) */
+  :root {
+    --green:      #00ab52;   /* Trussell green */
+    --dark-green: #0a3d2e;   /* Dark green */
+    --black:      #000000;
+    --white:      #ffffff;
+    --orange:     #ff5414;   /* Urgent colour: calls to action only */
+    --tint:       #e6f6ee;   /* pale green tint for backgrounds and panels */
+    --line:       #b9e3cd;   /* pale green tint for rules */
+
+    /* Content column, shared by header / grid / footer so everything lines up on the left */
+    --gutter: max(24px, calc((100vw - 980px) / 2 + 24px));
+
+    /* Hand-drawn underline (brand "underline" element) */
+    --underline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9 C 40 3, 80 12, 125 7 S 200 4, 237 8' fill='none' stroke='%2300ab52' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--dark-green);
+    font-family: 'Switzer', Arial, Helvetica, sans-serif;
+    color: var(--black);
+    text-align: left;
+  }
+
+  button { font-family: inherit; }
+
+  :focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+
+  /* Brand underline for key words */
+  .hl {
+    background-image: var(--underline);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.24em;
+    padding-bottom: 0.14em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SPLASH SCREEN
+  ═══════════════════════════════════════════════════ */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    cursor: pointer;
+    background: #000;
+  }
+
+  #splash.hidden { pointer-events: none; }
+
+  /* The two artwork images stacked, crossfading between them */
+  .splash-img {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transition: opacity 1.5s ease;
+  }
+
+  #splash-negative { background-image: url('images/all-1.jpg'); opacity: 1; }
+  #splash-positive { background-image: url('images/all-2.jpg'); opacity: 0; }
+
+  /* Click prompt: the one call to action, so it gets the urgent orange */
+  .splash-prompt {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    background: var(--orange);
+    color: var(--black);
+    padding: 14px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 560px) {
+    .splash-prompt { left: 20px; right: 20px; bottom: 24px; }
+  }
+
+  /* Fade out entire splash when dismissed */
+  #splash { transition: opacity 0.8s ease; }
+  #splash.fade-out { opacity: 0; }
+
+  /* ═══════════════════════════════════════════════════
+     MAIN CONTENT: hidden until splash dismissed
+  ═══════════════════════════════════════════════════ */
+  #main {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    background: var(--white);
+    min-height: 100vh;
+  }
+
+  #main.visible { opacity: 1; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--dark-green);
+    color: var(--white);
+    padding: 20px var(--gutter) 52px;
+    text-align: left;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-bottom: 4px;
+  }
+
+  /* Official logo (negative version, for dark backgrounds). The artwork carries its own clear space,
+     so it is shown uncropped; the negative margin only lines the symbol up with the content edge. */
+  .site-logo {
+    display: block;
+    width: clamp(190px, 22vw, 250px);
+    height: auto;
+    margin-left: calc(clamp(190px, 22vw, 250px) * -0.1);
+  }
+
+  /* Pill button, matching the buttons on the Foodbank and Trussell sites */
+  .back-btn {
+    display: inline-block;
+    background: var(--green);
+    color: var(--black);
+    border: 2px solid var(--green);
+    border-radius: 100px;
+    padding: 10px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+
+  .back-btn:hover { background: var(--white); border-color: var(--white); }
+
+  h1 {
+    font-size: clamp(3rem, 8vw, 5.6rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--white);
+  }
+
+  .header-desc {
+    margin-top: 28px;
+    font-size: 1.2rem;
+    color: var(--white);
+    max-width: 36em;
+    line-height: 1.55;
+  }
+
+  /* ── INTRO STRIP ── */
+  .intro-strip {
+    background: var(--green);
+    color: var(--black);
+    padding: 16px var(--gutter);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    max-width: 980px;
+    margin: 44px auto 20px;
+    padding: 0 24px;
+  }
+
+  @media (max-width: 860px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 620px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 420px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ── TILE ── */
+  .tile {
+    aspect-ratio: 3 / 4;
+    position: relative;
+    cursor: pointer;
+    border-radius: 3px;
+    overflow: hidden;
+    outline: 0 solid var(--green);
+    outline-offset: 0;
+    transition: outline-width 0.15s ease;
+    container-type: inline-size;
+  }
+
+  .tile:hover, .tile:focus-visible { outline: 4px solid var(--green); outline-offset: -4px; }
+
+  .tile-photo {
+    position: absolute;
+    inset: 0;
+    background-color: #1a1a1a;
+    background-size: cover;
+    background-position: center top;
+    transition: opacity 0.4s ease;
+  }
+
+  .tile-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .tile:hover .tile-overlay,
+  .tile:focus-visible .tile-overlay { opacity: 1; }
+
+  .tile-word {
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    text-align: center;   /* centred inside the tile only, so long words stay balanced */
+    padding: 0 6px;
+    line-height: 1.1;
+    width: 100%;
+  }
+
+  .tile-opened-mark {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 0 0 2px var(--white);
+    z-index: 10;
+  }
+
+  .tile.opened .tile-opened-mark { opacity: 1; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    max-width: 980px;
+    margin: 20px auto 56px;
+    padding: 0 24px;
+  }
+
+  .progress-bar-track { background: var(--tint); height: 8px; overflow: hidden; }
+
+  .progress-bar-fill {
+    background: var(--green);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    font-size: 0.95rem;
+    color: var(--black);
+    margin-top: 10px;
+  }
+
+  /* ── MODAL BACKDROP ── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 61, 46, 0.88);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-backdrop.visible { opacity: 1; pointer-events: all; }
+
+  /* ── MODAL ── */
+  .modal {
+    background: var(--white);
+    border-radius: 4px;
+    max-width: 660px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    transform: translateY(18px);
+    transition: transform 0.35s ease;
+  }
+
+  .modal-backdrop.visible .modal { transform: translateY(0); }
+
+  .modal-topbar {
+    background: var(--white);
+    border-bottom: 4px solid var(--green);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-topbar-word {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--black);
+    letter-spacing: -0.01em;
+  }
+
+  .modal-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .modal-topbar-num {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--black);
+    margin-right: 8px;
+  }
+
+  .ico {
+    display: inline-block;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-size: contain; mask-size: contain;
+  }
+  .ico-left  { width: 24px; height: 14px; -webkit-mask-image: url('data:image/png;base64,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');  mask-image: url('data:image/png;base64,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'); }
+  .ico-right { width: 24px; height: 14px; -webkit-mask-image: url('data:image/png;base64,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'); mask-image: url('data:image/png;base64,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'); }
+  .ico-ear   { width: 18px; height: 25px; -webkit-mask-image: url('data:image/png;base64,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');    mask-image: url('data:image/png;base64,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'); }
+
+  .close-btn:disabled { opacity: 0.3; cursor: default; }
+  .close-btn:disabled:hover { background: var(--white); }
+
+  /* Square frame: brand frames are never circular */
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    border: 3px solid var(--green);
+    background: var(--white);
+    color: var(--black);
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .close-btn:hover { background: var(--tint); }
+
+  .modal-body { padding: 28px 32px 20px; }
+
+  .modal-img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    margin-bottom: 24px;
+    background: var(--tint);
+    clip-path: url(#imgCurve);
+  }
+
+  .modal-img-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: var(--tint);
+    border: 2px dashed var(--line);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 24px;
+    color: var(--black);
+    font-size: 0.95rem;
+  }
+
+  .modal-img-placeholder .ph-icon { font-size: 2.2rem; opacity: 0.4; }
+
+  /* ── AUDIO PLAYER ── */
+  .audio-player {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--tint);
+    border: 3px solid var(--green);
+    border-radius: 4px;
+    padding: 16px 18px 18px;
+    margin-bottom: 28px;
+  }
+
+  .audio-player.hidden { display: none; }
+
+  .audio-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .audio-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .audio-time {
+    font-size: 0.95rem;
+    color: var(--black);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Scrubber: click or drag to move through the narration */
+  .audio-progress-track {
+    width: 100%;
+    height: 10px;
+    margin: 6px 0;
+    background: var(--white);
+    border: 1px solid var(--green);
+    cursor: pointer;
+    position: relative;
+    touch-action: none;
+  }
+
+  .audio-progress-fill {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    pointer-events: none;
+  }
+
+  .audio-thumb {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    width: 18px;
+    height: 26px;
+    background: var(--dark-green);
+    border: 2px solid var(--white);
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .audio-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .audio-btn {
+    height: 38px;
+    min-width: 48px;
+    padding: 0 10px;
+    border-radius: 3px;
+    border: 3px solid var(--dark-green);
+    background: var(--white);
+    color: var(--dark-green);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .audio-btn:hover { background: var(--dark-green); color: var(--white); }
+
+  .audio-play-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    background: var(--dark-green);
+    color: var(--white);
+    font-size: 1.1rem;
+  }
+
+  .audio-play-btn:hover { background: var(--black); border-color: var(--black); }
+
+  .audio-replay { margin-left: auto; }
+
+  /* ── STORY TEXT ── */
+  .modal-title {
+    font-size: clamp(1.7rem, 5vw, 2.5rem);
+    font-weight: 700;
+    color: var(--dark-green);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    line-height: 1.15;
+  }
+
+  .modal-story {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--black);
+  }
+
+  .modal-story p + p { margin-top: 1em; }
+  .modal-story strong { font-weight: 600; }
+
+  /* ── DOT TRAIL (square markers) ── */
+  .dot-trail {
+    display: flex;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 16px 32px 4px;
+    flex-wrap: wrap;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    background: var(--line);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .dot.opened  { background: var(--green); opacity: 0.5; }
+  .dot.current { background: var(--dark-green); opacity: 1; transform: scale(1.35); }
+
+  /* ── MODAL NAV ── */
+  .modal-nav {
+    display: flex;
+    gap: 12px;
+    padding: 18px 32px 28px;
+    border-top: 1px solid var(--line);
+    margin-top: 16px;
+  }
+
+  .nav-btn {
+    flex: 1;
+    padding: 14px 16px;
+    border: 3px solid var(--dark-green);
+    background: var(--white);
+    color: var(--dark-green);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  #nextBtn { justify-content: flex-end; }
+
+  .nav-btn:hover:not(:disabled) { background: var(--dark-green); color: var(--white); }
+
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark-green);
+    color: var(--white);
+    padding: 32px var(--gutter) 44px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  footer a { color: var(--white); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; text-decoration-color: var(--green); }
+
+  .modal::-webkit-scrollbar { width: 6px; }
+  .modal::-webkit-scrollbar-thumb { background: var(--line); }
+
+  @media (max-width: 520px) {
+    .modal-body { padding: 22px 20px 16px; }
+    .modal-topbar { padding: 14px 20px; }
+    .modal-topbar-word { font-size: 1.3rem; }
+    .modal-topbar-num { display: none; }
+    .modal-topbar-right { gap: 6px; }
+    .close-btn { width: 36px; height: 36px; }
+    .audio-replay { margin-left: 0; }
+    .dot-trail { padding: 16px 20px 4px; }
+    .modal-nav { padding: 16px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Curved top edge for photos, echoing the hero images on the Foodbank site -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs><clipPath id="imgCurve" clipPathUnits="objectBoundingBox"><path d="M0,0.13 C0.28,0.01 0.62,0.05 1,0 L1,1 L0,1 Z"/></clipPath></defs>
+</svg>
+
+<!-- ═══════════════════════════════════════════════════
+     SPLASH SCREEN
+═══════════════════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-img" id="splash-negative"></div>
+  <div class="splash-img" id="splash-positive"></div>
+  <p class="splash-prompt">Click anywhere to explore the stories</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════ -->
+<div id="main">
+
+  <header>
+    <div class="header-top">
+      <img class="site-logo" src="images/logo-negative.png" alt="Uttlesford Foodbank, together with Trussell" width="1120" height="507">
+      <a class="back-btn" href="https://uttlesford.foodbank.org.uk/">Back to main site</a>
+    </div>
+    <h1>I Am <span class="hl">More</span></h1>
+    <p class="header-desc">Each leather panel has a word sewn into it by someone we support: how they feel at their lowest. On the reverse is the word they chose to embroider to prove that they are more. Click a word to read and hear the story beneath the surface.</p>
+  </header>
+
+  <div class="intro-strip">Click each image to learn more.</div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+    <p class="progress-text" id="progressText">0 of 10 panels opened</p>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="backdrop" role="dialog" aria-modal="true">
+    <div class="modal" id="modal">
+      <div class="modal-topbar">
+        <span class="modal-topbar-word">I am more</span>
+        <div class="modal-topbar-right">
+          <span class="modal-topbar-num" id="modalNum"></span>
+          <button class="close-btn" id="topPrev" aria-label="Previous story"><span class="ico ico-left"></span></button>
+          <button class="close-btn" id="topNext" aria-label="Next story"><span class="ico ico-right"></span></button>
+          <button class="close-btn" id="closeBtn" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="modalImgWrap"></div>
+        <div class="audio-player hidden" id="audioPlayer">
+          <div class="audio-head">
+            <span class="audio-label"><span class="ico ico-ear" style="margin-right:10px;vertical-align:-5px;color:var(--dark-green)"></span>Listen to narration</span>
+            <span class="audio-time" id="audioTime">0:00 / 0:00</span>
+          </div>
+          <div class="audio-progress-track" id="audioTrack" role="slider" tabindex="0"
+               aria-label="Narration position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="audio-progress-fill" id="audioFill"></div>
+            <div class="audio-thumb" id="audioThumb"></div>
+          </div>
+          <div class="audio-controls">
+            <button class="audio-btn" id="audioBack" aria-label="Back 10 seconds">&minus;10s</button>
+            <button class="audio-btn audio-play-btn" id="audioPlayBtn" aria-label="Play or pause narration"></button>
+            <button class="audio-btn" id="audioFwd" aria-label="Forward 10 seconds">+10s</button>
+            <button class="audio-btn audio-replay" id="audioReplay" aria-label="Replay from the start">↻ Replay</button>
+          </div>
+        </div>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <div class="modal-story" id="modalStory"></div>
+      </div>
+      <div class="dot-trail" id="dotTrail"></div>
+      <div class="modal-nav">
+        <button class="nav-btn" id="prevBtn"><span class="ico ico-left"></span>Previous</button>
+        <button class="nav-btn" id="nextBtn">Next<span class="ico ico-right"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    An interactive art installation &nbsp;·&nbsp; Uttlesford Foodbank &nbsp;·&nbsp;
+    <a href="https://uttlesford.foodbank.org.uk/">uttlesford.foodbank.org.uk</a>
+  </footer>
+
+</div><!-- end #main -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  SPLASH
+// ═══════════════════════════════════════════════════════════════════════════
+const splash         = document.getElementById('splash');
+const splashNeg      = document.getElementById('splash-negative');
+const splashPos      = document.getElementById('splash-positive');
+let showingPositive  = false;
+
+// Crossfade every 3 seconds
+setInterval(() => {
+  showingPositive = !showingPositive;
+  splashNeg.style.opacity = showingPositive ? '0' : '1';
+  splashPos.style.opacity = showingPositive ? '1' : '0';
+}, 3000);
+
+// Click to dismiss
+splash.addEventListener('click', () => {
+  splash.classList.add('fade-out');
+  document.getElementById('main').classList.add('visible');
+  setTimeout(() => { splash.style.display = 'none'; }, 900);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════════════════════
+const panels = [
+  {
+    word:       "WEAK",
+    revealWord: "HEALER",
+    imageTile:  "images/tile-1.jpg",
+    imageModal: "images/modal-1.jpg",
+    audio:      "audio/Weak.mp3",
+    title:      "Healer",
+    story:      `<p>I guess I am what you would call a strong woman. I worked around the world, running major companies. I fell in love, was swept off my feet. We got married very quickly. He is from another culture. The abuse was very gradual. At first things like 'is that what you are going to wear', finally becoming 'you cannot listen to any music including having the radio on' and 'you have to stay in that room and not come out, and the children too'. I finally got up the courage to escape home to the UK with my children. I was a shadow of who I was. Small and broken and in great pain. I had lost my sense of self, I was hanging on by a thread.</p><p>All of my savings went into fighting to protect my children in court, which I successfully did. It took all I had. I ended up with nowhere to live. Slowly and painstakingly I have re-built myself and my life. I have needed to reach out for help of all kinds. The food bank have been a lifeline. I underestimated how long it would take to recover from the trauma and how that would act out on the body. It has been 1 step forwards and 10 back. It has taken great patience and humility and strength. I am trying to learn not to live in fear, I am trying to teach myself to breathe, that it is ok, we are safe. I am re-discovering my creative self, my abilities to heal people including myself. I always have the radio on. And I sing.</p>`
+  },
+  {
+    word:       "LOST",
+    revealWord: "INDEPENDENT",
+    imageTile:  "images/tile-2.jpg",
+    imageModal: "images/modal-2.jpg",
+    audio:      "audio/Lost.mp3",
+    title:      "Independent",
+    story:      `<p>My parents split up when I was young, and from then on me and my sibling lived with my Dad. He was always a bit of a worrier, keeping a close eye on money.</p><p>Just before I started secondary school, Dad met a new partner who had 2 children of their own. We'd spend weekends at either ours or theirs but us children would be shooed away in the evenings so Dad and his partner could spend time together. This always involved alcohol. When we all moved in together the drinking increased to weekdays.</p><p>On the surface we were a 'normal' blended family. Dad was a very good functioning alcoholic, he never missed a parent's evening and always worked 5 full days a week. But behind closed doors, it was chaotic, empty bottles all around the house. The nights were the worst. Dad's partner physically abused him and there were several times when the police arrived at the door in the middle of the night. I felt so ashamed and scared. Dad would cry and say sorry to me and my sibling, but he was drunk.</p><p>As children, we grew up fast, keeping all the chaos and drinking a secret. Running the house fell to us. At home I was in charge, at school I acted out. Teachers would call me out for being lazy and not concentrating, but looking back I was just tired, exhausted. I was juggling two different lives, running a home and going out a lot to try and get away from the chaos. I guess it looked like I was lost, badly behaved, but it was just my way of coping.</p><p>We never had money to buy things, but there was ALWAYS money for vodka. I remember taking value crisps to school but keeping them in my blazer pocket so people didn't see. Sometimes, one of the dinner ladies would give me one of the leftover pies from lunchtime. I think she must have mentioned me to a teacher, because one day I was asked to go to the school office. They were kind and they listened and helped us get in touch with the local food bank.</p><p>Looking back now, there were people I could have asked for help earlier. I just didn't know they were there. I felt ashamed. I've learned that I am independent, and that I don't always have to do everything on my own. I can ask for help.</p>`
+  },
+  {
+    word:       "FAILURE",
+    revealWord: "CAPABLE",
+    imageTile:  "images/tile-3.jpg",
+    imageModal: "images/modal-3.jpg",
+    audio:      "audio/Failure.mp3",
+    title:      "Capable",
+    story:      `<p>I'm a single parent of three children and I'm used to counting every penny. We've been on our own for a while now and I've got a local, part-time job. With the children the ages they are, I need to be around either end of the school day. We don't have any family nearby, so it's up to me to keep all the plates spinning.</p><p>We've never expected much, and I suppose I've got quite used to scraping by, but the last year has been particularly hard. I sometimes felt like I'm failing.</p><p>Everything has gone up and I'm struggling to make the money cover all the bills. I'm constantly taking from one pot to put into another. Sometimes I'm late paying my rent or council tax because I'm holding money back to make sure I can put food on the table. It's important that the children eat, even if I don't. If it's a really tight week, I'll just make do with their leftovers. I think one of the most difficult bits is when we go food shopping. I try to do this when they're at school if I can, but that's not always possible. It's awful if my card's declined and they're with me. It's only happened a couple of times, because I usually try to add everything up as I go round with the trolley. That way, I can put things back before I go through the checkout.</p><p>As much as possible, I try not to let the children see how much I worry. I try to make things normal for them, just like their friends. I don't want them to be left out. Weekends and holiday times are hard, because we really don't have the money to do what other families do. I've found ways for us to have fun together that don't cost much. We do crafts and go for walks. We play music and they make up funny dance shows. They all like reading so we go to the library. I'm doing my best to give my children a good start. They're always well turned out and I've brought them up to have good manners.</p><p>To look at me, I don't think you'd know how much I do every day to hold everything together, to keep a roof over our heads, bills paid, food on the table. As the children get older, I'll be able to increase my hours, maybe even get a full time job. Then things should get better for all of us. I've learned I'm capable of more than I thought. Until then, I'll do all that I can to keep the plates spinning.</p>`
+  },
+  {
+    word:       "LIAR",
+    revealWord: "BRAVE",
+    imageTile:  "images/tile-4.jpg",
+    imageModal: "images/modal-4.jpg",
+    audio:      "audio/Liar.mp3",
+    title:      "Brave",
+    story:      `<p>At sixteen, I left school on the Friday and started working on the Monday. I started out as a hairdresser, learning on the job. I liked it, I'm a people person. After a few years I made a career change and completed a new qualification so I could work in healthcare. In my 20s I started to become unwell. I wasn't sure what was wrong. I have always been a confident, active, smiley person, but I found I was exhausted all the time. Some days my mobility was so bad I could not do my job. I went to the doctor and they started doing tests. There was a time when they did not know what was wrong with me and I had to come to terms with my health having changed. I changed job to one where I could sit down and did not need to move about as much, a receptionist. I like talking to people and helping them, and I enjoyed being the person to really welcome them to a place.</p><p>Despite still working, my body began to really slow down, it was hard for me to walk, climb stairs, do everyday things. I always had lots of friends, I had always been there for them and they for me. But I guess it was easy to look at me and not understand, I guess it was easy for someone to think I was lying or just being lazy. Friends drifted away. Loneliness is not something I expected.</p><p>The doctors eventually found I have Multiple Sclerosis, a condition that significantly affects mobility. I never wanted to give up work. I am someone who keeps going no matter what and I struggled to accept that this was beyond my control. It felt like I didn't have a choice. I have carers now. Very occasionally a rare friend will call by, but it is mainly the carers I see. I don't go out. Now you can see I'm disabled. People sometimes look at me with pity, but I don't want their pity. I haven't given up. I am a mum and I am there for my children no matter what — as long as they're alright, I'm alright. I am a good mum; I am a people person and I have a disability.</p>`
+  },
+  {
+    word:       "SCROUNGER",
+    revealWord: "PROVIDER",
+    imageTile:  "images/tile-5.jpg",
+    imageModal: "images/modal-5.jpg",
+    audio:      "audio/Scrounger.mp3",
+    title:      "Provider",
+    story:      `<p>Up until last year I had a good job. Changes at work meant I was made redundant. There had been rumblings for months, but I had quite a specialist role, so I thought I'd be safe. I'd always been able to provide for my family, but suddenly we found ourselves relying on just my wife's salary. I immediately started looking for something else. I applied for lots of roles, but nothing came through. Before long, we were dipping into our savings. It just never occurred to me that it would be so difficult to find another job. After six months, with our savings pretty much used up, I applied for Universal Credit.</p><p>Not being able to find another job has been hard. It's made me feel much less important to my family. We've had to go to charities for help. I feel bad because our life used to be very different. We never seem to have enough money for everything we need. We're barely getting by.</p><p>My wife's managed to increase her hours at work and I've taken over running the home. We budget constantly – I have a spreadsheet to help us keep track of our money. I'm trying to do my bit to still provide for us all. I'm good at hunting down offers and know when's best to go to the supermarket so I can get reduced items. I do all the cooking now. I've learned new recipes and I go to a local Foodshare once a week to pick up fresh food. I've got some regular recipes which are a hit with the kids. My pasta bolognaise is a weekly favourite.</p><p>We're coming up to a year of me not working. Each week I go through the job sites. I get notifications as new roles are posted and I send my applications in as soon as I can. 'Sorry your application has been unsuccessful' is really hard to accept as time goes on. Being unemployed has taught me a lot about myself and about others. My job really shaped who I was. I never saw this coming down the track towards us. I hope people still see me as a provider, just in a different way. Every day I try to focus on the positive.</p>`
+  },
+  {
+    word:       "UNSTABLE",
+    revealWord: "FIGHTER",
+    imageTile:  "images/tile-6.jpg",
+    imageModal: "images/modal-6.jpg",
+    audio:      "audio/Unstable.mp3",
+    title:      "Fighter",
+    story:      `<p>My mental health issues started young. As the result of trauma. I grew up in an academic family whose expectations were high. I was always the outgoing child, rebel child I was often called. I was also eager to please. A challenging combination. I went to university, I enjoyed it and partied hard. I had a side job in IT to pay the bills and after I left university, ended up in IT full time. I started to become aware that I may have some mental health issues. I forged a career which took advantage of my obsessive organisational skills and attention to detail, at the cost to my wellbeing.</p><p>On 7th July 2005 I was on my way to catch a Circle Line tube to London Bridge station … and a little hungover. The carriage was not too full, and I stood next to the train doors. Just as the doors were sliding shut to depart I made a split-second decision to jump off to buy a coke from the platform kiosk. That decision possibly saved my life. Only moments after the tube left it exploded in the tunnel, killing 7 people. It was a terror attack - 7/7.</p><p>The rest of that day is a blur. I kept thinking I had to get to work. But I realised I had to get home. I did not have an immediate reaction. Life went on, I found a way to separate myself from the experience. I felt for the people that died, but I didn't connect to the trauma. I just felt lucky.</p><p>One day a couple of years later I put my foot on the top step of a tube station escalator and froze. I could not go down the escalator. I went from not being able to get on escalators to not being able to get on tubes at all. I went everywhere by bus. It took forever. I made the decision to leave London. I thought it would help, but I still needed to get the train to work. Soon I started to panic if the train went through a tunnel. I had to leave my job. I went to the doctor and was diagnosed with delayed PTSD. I lost my ability to focus, I lost my spark, I lost the qualities people knew me by. I felt insignificant. I was struggling to pay the rent, let alone put food on the table. I looked for a local job, so that I didn't need to travel. The jobs simply weren't there. I felt like a failure. I turned to the food bank whilst I was looking for work. If it was not for their help, I would not have had the space to recover. I learnt that sometimes to go forwards you have to first stop and look after yourself. My brain needed to slow down in order to recover. I know I am still affected by the events of that day but my life now is different, I'm working again and volunteer at my local food bank.</p>`
+  },
+  {
+    word:       "IRRESPONSIBLE",
+    revealWord: "ORGANISED",
+    imageTile:  "images/tile-7.jpg",
+    imageModal: "images/modal-7.jpg",
+    audio:      "audio/Irresponsible.mp3",
+    title:      "Organised",
+    story:      `<p>I was a photographer. I was hopeless at school, and no one knew how to get me to try at anything. In a lesson one day a teacher introduced us to photography. And I was good at it. At first just the regular stuff, you know - pictures of trees. But I kept going and I ended up working in fashion - photographing catwalk models for high end fashion magazine shoots.</p><p>I lived in London – that's where all the work is. I had good friends and lived a careful life. I met someone amazing, she was a fashion buyer. We rented a flat together and things were great. Neither of us had any savings, as glamorous as the industry sounds, it's quite a hand to mouth existence and that's fine as long as you live carefully – so I became an expert in managing outgoings and income. Just as well because I was self-employed and the main skills needed for that are organisation and carefulness - I managed all my own bookings, taxes, studio hire, etc.</p><p>We had a sudden and very painful breakup that I didn't see coming. It became clear we couldn't both stay in the flat. One of us had to leave. She had no friends or family nearby to stay with, but I did. So I left. It seemed like the right thing to do. I tried to rent a place on my own but couldn't afford it. So I stayed with friends, sofa-surfing. But it's so expensive to live in London, so I had to leave. Leaving meant being away from access to work.</p><p>I moved back to my hometown. My grandparents still live there. I couldn't stay with them, they have a tiny flat. And again, I couldn't afford to rent. So I became homeless. I still stay sometimes on friends' sofas when I can. This has all affected my mental health quite a lot but I've used my good organisation skills to try and get some help. I've gone to Citizens Advice and they helped me get a SIM card so I can stay in contact with the DWP. I'm on the council waiting list for somewhere to live. Sometimes I use the food bank so that I have something to give the people whose sofas I sleep on – I can't expect them to feed me, as well. I've used my organisation skills to try and get myself out of this situation. I know I'm a capable person. Hardship can happen to anyone. I'm worried I'll never get to work as a photographer again, photography is who I am. But first I need to get back on my feet.</p>`
+  },
+  {
+    word:       "FREELOADER",
+    revealWord: "SKILLED",
+    imageTile:  "images/tile-8.jpg",
+    imageModal: "images/modal-8.jpg",
+    audio:      "audio/Freeloader.mp3",
+    title:      "Skilled",
+    story:      `<p>I was a paediatric doctor in charge of the children's department. To become a doctor takes years of training. I loved my job, I was helping children, and I had an amazing team of colleagues. At home I had my own young family - three children and a wife, who is an amazing mother. We met at the hospital; she was a nurse. We loved our life in the busy city, we were happy.</p><p>Things changed when the bombing started. We lived quite close to the hospital. Whole areas of the city vanished in weeks. You could walk down a street one morning and by the afternoon nothing – just rubble and blood. We talked about whether we should leave, but nowhere was safe. It seemed there was no way out, nowhere to go and so we stayed.</p><p>When the hospital was bombed half the building was destroyed. There had been rumours, two of my colleagues disappeared. We heard there was a list and that our address might be on it. We were terrified. We knew we needed to find a way for our family to get out.</p><p>When we left we took only what we could carry. We let each child only bring one small toy. I am not going to explain to you the route we took to get here and what we had to do, it is very difficult to think about. I realise people have very strong opinions about us coming here, but I want you to know that we would not have left unless there was no other way. We loved our home and our country. It is hard to carry a frightened, crying child at night past danger.</p><p>Trying to get help here has been difficult. Obviously, I am trained as a doctor to help children, but I do not have the qualifications to work here and my English is good but not up to medical standard. We are now refugees. We receive some money and are grateful for this, but there is not enough left to buy food after we have paid the rent. We live in a one bedroom flat. I am a proud man, I have worked my whole life, I have good skills, but now I feel judged, worthless and unwelcome.</p><p>When the children are sleeping, my wife and I sit together and try to think about our future. We are grieving for our country, for our home, for people and places we will never see again. I am worried for my children. Our country has been torn apart, and we have been too.</p>`
+  },
+  {
+    word:       "LAZY",
+    revealWord: "GIVING",
+    imageTile:  "images/tile-9.jpg",
+    imageModal: "images/modal-9.jpg",
+    audio:      "audio/Lazy.mp3",
+    title:      "Giving",
+    story:      `<p>Five years ago, I never thought we'd be where we are now. I'd worked since I was 16, paying national insurance and income tax. My husband was the same. We both had decent jobs and life was good. We felt really settled and happy in our little house, with a couple of kids and a dog. It was what we'd always wanted. Then the pandemic came and my husband got Covid. He was one of the early ones, and got it really bad. He developed Long Covid which meant he had to stop work. He's still not right, all this time on. Pretty much overnight, I became the main earner. It wasn't easy, but we got by. Then, just over a year ago, I became unwell. I went for lots of tests to find out what was wrong. I was diagnosed with the early stages of a long-term health condition affecting my co-ordination. It was no longer possible for me to work.</p><p>We've gone from being a working family to being a household on benefits. Our income now is much lower than what it was before and the smallest change can see us tip into debt. This month, I really don't know how we're going to pay the gas and electric. We're already behind on both. Benefit payments change all the time, so it's been difficult to set up consistent repayment plans that don't trigger other debt for something else.</p><p>The changes have had a massive impact on our little family because less money means we've had to say no to lots of things that other families take for granted. Even who we hang out with has changed, because we can't always afford to do what they're all doing together.</p><p>I've recently started volunteering for a local charity, using my skills to help out with their admin. They know about my condition, and have made it possible for me to volunteer around my 'good days'. My husband's also found a local group which needs occasional practical help. He's good with his hands and it means he can build up to going back to work.</p><p>We used to give to charity, a regular donation from our salaries. Obviously, that changed and we found ourselves on the receiving end of needing help. When we had nowhere to turn they were there for us. Now volunteering is helping us find our way again, and it's also our way of saying thank you...thank you for being there when things fell apart.</p>`
+  },
+  {
+    word:       "UNWANTED",
+    revealWord: "RESOURCEFUL",
+    imageTile:  "images/tile-10.jpg",
+    imageModal: "images/modal-10.jpg",
+    audio:      "audio/Unwanted.mp3",
+    title:      "Resourceful",
+    story:      `<p>What can I tell you about myself. I have always been really close with my mother and good with animals. My mother has a photo of me as a kid holding a bird on my hand. My father – more problematic. He is a distant man. I have always found this hard. I was sent away to boarding school at a young age. I felt it was because my father did not want me around.</p><p>I was as difficult as I could be growing up – it was my only way of being able to say I felt groundless. This carried on into adult life and I found I could never settle. I was searching for something, but I could not figure out what. I would make spontaneous, big decisions which I was convinced would change my life and make me feel wanted and valued.</p><p>Once, I locked up where I was living – sent my mother the key and got on a plane to India without telling anyone. I was in search of some mental peace, I realised. I did a lot of work and came to peace with some things.</p><p>I guess while I was looking for this peace, I missed out on some of the stages people go through where they earn financial stability. I have found it hard to financially manage as a single householder and have needed to use the food bank to get by.</p><p>What I have learnt about myself is that I am resourceful. Where there is a lack of something being provided, I find a way to go in search of it. I have had a lot of extraordinary experiences and I would not change those for the world. I am a seeker. I am resourceful. And I have found myself.</p>`
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const opened  = new Set();
+let current   = null;
+let audioEl   = null;
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  BUILD GRID
+// ═══════════════════════════════════════════════════════════════════════════
+const grid     = document.getElementById('grid');
+const dotTrail = document.getElementById('dotTrail');
+const fill     = document.getElementById('progressFill');
+const progText = document.getElementById('progressText');
+
+panels.forEach((p, i) => {
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+  tile.dataset.index = i;
+  tile.setAttribute('role', 'button');
+  tile.setAttribute('tabindex', '0');
+  tile.setAttribute('aria-label', `Panel ${i + 1}: ${p.word}`);
+  const len = p.word.length;
+  const fs = len <= 4  ? 'clamp(1.8rem, 18cqi, 3rem)'
+           : len <= 6  ? 'clamp(1.5rem, 15cqi, 2.6rem)'
+           : len <= 8  ? 'clamp(1.2rem, 13cqi, 2.2rem)'
+           : len <= 10 ? 'clamp(1rem, 11cqi, 1.8rem)'
+           :              'clamp(0.9rem, 9cqi, 1.5rem)';
+  tile.innerHTML = `
+    <div class="tile-photo" style="background-image:url('${p.imageTile}')"></div>
+    <div class="tile-overlay">
+      <span class="tile-word" style="font-size:${fs}">${p.word}</span>
+    </div>
+    <div class="tile-opened-mark"></div>
+  `;
+  tile.addEventListener('click', () => handleTile(i, tile));
+  tile.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') handleTile(i, tile);
+  });
+  grid.appendChild(tile);
+
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.dataset.index = i;
+  dot.title = `Panel ${i + 1}: ${p.word}`;
+  dot.addEventListener('click', () => openModal(i));
+  dotTrail.appendChild(dot);
+});
+
+function handleTile(i, tile) {
+  if (!tile.classList.contains('opened')) {
+    tile.classList.add('opened');
+    opened.add(i);
+    updateProgress();
+  }
+  openModal(i);
+}
+
+function updateProgress() {
+  const n = opened.size;
+  fill.style.width = (n / panels.length * 100) + '%';
+  progText.textContent = n === panels.length
+    ? 'All ten panels opened — thank you for listening.'
+    : `${n} of ${panels.length} panels opened`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+const backdrop     = document.getElementById('backdrop');
+const modalNum     = document.getElementById('modalNum');
+const modalTitle   = document.getElementById('modalTitle');
+const modalStory   = document.getElementById('modalStory');
+const modalImgWrap = document.getElementById('modalImgWrap');
+const audioPlayer  = document.getElementById('audioPlayer');
+const audioPlayBtn = document.getElementById('audioPlayBtn');
+const audioFill    = document.getElementById('audioFill');
+const audioTime    = document.getElementById('audioTime');
+const audioTrack   = document.getElementById('audioTrack');
+
+// Titles that are nouns take "a" (I am a Healer); the rest are adjectives (I am Brave)
+const NOUN_TITLES = new Set(['Healer', 'Provider', 'Fighter']);
+
+function openModal(i) {
+  stopAudio();
+  current = i;
+  const p = panels[i];
+  modalNum.textContent   = `${i + 1} / ${panels.length}`;
+  modalTitle.innerHTML = 'I am more. I am ' + (NOUN_TITLES.has(p.title) ? 'a ' : '') + '<span class="hl">' + p.title + '</span>';
+  modalStory.innerHTML   = p.story;
+
+  if (p.imageModal) {
+    modalImgWrap.innerHTML = `<img class="modal-img" src="${p.imageModal}" alt="${p.title}">`;
+  } else {
+    modalImgWrap.innerHTML = `<div class="modal-img-placeholder"><span class="ph-icon">📷</span><span>Image goes here (modal-${i+1}.jpg)</span></div>`;
+  }
+
+  if (p.audio) {
+    audioPlayer.classList.remove('hidden');
+    setupAudio(p.audio);
+  } else {
+    audioPlayer.classList.add('hidden');
+  }
+
+  document.getElementById('prevBtn').disabled = (i === 0);
+  document.getElementById('nextBtn').disabled = (i === panels.length - 1);
+  document.getElementById('topPrev').disabled = (i === 0);
+  document.getElementById('topNext').disabled = (i === panels.length - 1);
+  backdrop.classList.add('visible');
+  document.getElementById('modal').scrollTop = 0;
+  updateDots();
+}
+
+function closeModal() {
+  stopAudio();
+  backdrop.classList.remove('visible');
+  current = null;
+  updateDots();
+}
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((dot, i) => {
+    dot.classList.toggle('opened',  opened.has(i));
+    dot.classList.toggle('current', i === current);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════════════════════════════════════
+const audioThumb  = document.getElementById('audioThumb');
+const audioBack   = document.getElementById('audioBack');
+const audioFwd    = document.getElementById('audioFwd');
+const audioReplay = document.getElementById('audioReplay');
+
+const ICON_PLAY  = '<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 2l12 7-12 7z" fill="currentColor"/></svg>';
+const ICON_PAUSE = '<svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="2" width="4" height="14" fill="currentColor"/><rect x="11" y="2" width="4" height="14" fill="currentColor"/></svg>';
+function setPlayIcon(playing) { audioPlayBtn.innerHTML = playing ? ICON_PAUSE : ICON_PLAY; }
+setPlayIcon(false);
+
+function setProgress(pct) {
+  pct = Math.max(0, Math.min(100, pct));
+  audioFill.style.width  = pct + '%';
+  audioThumb.style.left  = pct + '%';
+  audioTrack.setAttribute('aria-valuenow', Math.round(pct));
+}
+
+function setupAudio(src) {
+  audioEl = new Audio(src);
+  setPlayIcon(false);
+  setProgress(0);
+  audioTime.textContent = '0:00 / 0:00';
+  audioEl.addEventListener('loadedmetadata', () => {
+    audioTime.textContent = `0:00 / ${fmt(audioEl.duration)}`;
+  });
+  audioEl.addEventListener('timeupdate', () => {
+    if (!audioEl.duration) return;
+    setProgress(audioEl.currentTime / audioEl.duration * 100);
+    audioTime.textContent = `${fmt(audioEl.currentTime)} / ${fmt(audioEl.duration)}`;
+  });
+  audioEl.addEventListener('ended', () => {
+    setPlayIcon(false);
+    setProgress(100);
+  });
+}
+
+function stopAudio() {
+  if (audioEl) { audioEl.pause(); audioEl.src = ''; audioEl = null; }
+  setPlayIcon(false);
+  setProgress(0);
+  audioTime.textContent = '0:00 / 0:00';
+}
+
+function fmt(s) {
+  if (isNaN(s)) return '0:00';
+  return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+}
+
+function playAudio() {
+  if (!audioEl) return;
+  const r = audioEl.play();
+  if (r && r.catch) r.catch(() => {});
+  setPlayIcon(true);
+}
+
+// Play / pause (restarts from the beginning if the narration has finished)
+audioPlayBtn.addEventListener('click', () => {
+  if (!audioEl) return;
+  if (audioEl.ended || audioEl.paused) {
+    if (audioEl.ended) audioEl.currentTime = 0;
+    playAudio();
+  } else {
+    audioEl.pause();
+    setPlayIcon(false);
+  }
+});
+
+// Back / forward 10 seconds
+function skip(seconds) {
+  if (!audioEl || !audioEl.duration) return;
+  audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime + seconds));
+  setProgress(audioEl.currentTime / audioEl.duration * 100);
+}
+audioBack.addEventListener('click', () => skip(-10));
+audioFwd.addEventListener('click',  () => skip(+10));
+
+// Replay from the start
+audioReplay.addEventListener('click', () => {
+  if (!audioEl) return;
+  audioEl.currentTime = 0;
+  setProgress(0);
+  playAudio();
+});
+
+// Scrubber: click or drag along the bar to move through the narration
+let scrubbing = false;
+function seekFromPointer(e) {
+  if (!audioEl || !audioEl.duration) return;
+  const rect = audioTrack.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audioEl.currentTime = ratio * audioEl.duration;
+  setProgress(ratio * 100);
+  audioTime.textContent = `${fmt(audioEl.currentTime)} / ${fmt(audioEl.duration)}`;
+}
+audioTrack.addEventListener('pointerdown', e => {
+  scrubbing = true;
+  audioTrack.setPointerCapture(e.pointerId);
+  seekFromPointer(e);
+});
+audioTrack.addEventListener('pointermove', e => { if (scrubbing) seekFromPointer(e); });
+audioTrack.addEventListener('pointerup',     () => { scrubbing = false; });
+audioTrack.addEventListener('pointercancel', () => { scrubbing = false; });
+audioTrack.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  { skip(-5); e.preventDefault(); e.stopPropagation(); }
+  if (e.key === 'ArrowRight') { skip(+5); e.preventDefault(); e.stopPropagation(); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════
+document.getElementById('closeBtn').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+
+function navTo(delta) {
+  const next = current + delta;
+  if (next < 0 || next >= panels.length) return;
+  const tile = document.querySelector(`.tile[data-index="${next}"]`);
+  if (tile && !tile.classList.contains('opened')) {
+    tile.classList.add('opened');
+    opened.add(next);
+    updateProgress();
+  }
+  openModal(next);
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => navTo(-1));
+document.getElementById('topPrev').addEventListener('click', () => navTo(-1));
+document.getElementById('topNext').addEventListener('click', () => navTo(+1));
+document.getElementById('nextBtn').addEventListener('click', () => navTo(+1));
+
+document.addEventListener('keydown', e => {
+  if (!backdrop.classList.contains('visible')) return;
+  if (e.key === 'Escape')    closeModal();
+  if (e.key === 'ArrowLeft') navTo(-1);
+  if (e.key === 'ArrowRight') navTo(+1);
+});
+</script>
+</body>
+</html>
