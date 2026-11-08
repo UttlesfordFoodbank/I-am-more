@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -837,12 +838,8 @@ panels.forEach((p, i) => {
   tile.setAttribute('role', 'button');
   tile.setAttribute('tabindex', '0');
   tile.setAttribute('aria-label', `Panel ${i + 1}: ${p.word}`);
-  const len = p.word.length;
-  const fs = len <= 4  ? 'clamp(1.8rem, 18cqi, 3rem)'
-           : len <= 6  ? 'clamp(1.5rem, 15cqi, 2.6rem)'
-           : len <= 8  ? 'clamp(1.2rem, 13cqi, 2.2rem)'
-           : len <= 10 ? 'clamp(1rem, 11cqi, 1.8rem)'
-           :              'clamp(0.9rem, 9cqi, 1.5rem)';
+  // Same size for every word, set so the longest (IRRESPONSIBLE) fits on one line
+  const fs = 'clamp(0.9rem, 9cqi, 1.5rem)';
   tile.innerHTML = `
     <div class="tile-photo" style="background-image:url('${p.imageTile}')"></div>
     <div class="tile-overlay">
@@ -1084,3 +1081,5 @@ document.addEventListener('keydown', e => {
 </script>
 </body>
 </html>
+
+</body></html>
